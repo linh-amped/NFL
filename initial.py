@@ -70,9 +70,9 @@ def extract_human(frame):
     result = human_detect(frame)
     bbox, bbox_class, bbox_score = None, None, None
     if 'detection_keypoints' in result:
-        bbox = result['detection_boxes'][0]
-        bbox_class = result['detection_classes'][0]
-        bbox_score = result['detection_keypoint_scores'][0]
+        pbox = result['detection_boxes'][0] #[ymin, xmin, ymax, xmax]
+        pbox_class = result['detection_classes'][0]
+        pbox_score = result['detection_keypoint_scores'][0]
     print(bbox)
     # keypoints, keypoint_scores = None, None
     # if 'detection_keypoints' in result:
