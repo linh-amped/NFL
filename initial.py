@@ -59,16 +59,21 @@ def human_detect(input_frame):
     result = {key: value.numpy() for key, value in results.items()}
     return result
 
+# if the center in the detected box, accept
+def check_inbound(bbox, helmet_box):
+    left,width,top,height = helmet_box[0], helmet_box[1], helmet_box[2], helmet_box[3]
+    center_x = left+width/2
+    center_y = top-height/2
+    return None
 def extract_human(frame):
     frame = np.expand_dims(frame.astype('uint8'), axis=0)
     result = human_detect(frame)
     bbox, bbox_class, bbox_score = None, None, None
     if 'detection_keypoints' in result:
-        if result['detection_classes'][0] == 1.0: # if human
-            bbox = result['detection_keypoints'][0]
-            bbox_class = result['detection_classes'][0]
-            bbox_score = result['detection_keypoint_scores'][0]
-    print(bbox_class)
+        bbox = result['detection_boxes'][0]
+        bbox_class = result['detection_classes'][0]
+        bbox_score = result['detection_keypoint_scores'][0]
+    print(bbox)
     # keypoints, keypoint_scores = None, None
     # if 'detection_keypoints' in result:
     #     keypoints = result['detection_keypoints'][0]
@@ -104,7 +109,6 @@ def video_read(link_video):
 
 
 def main():
-
     warnings.filterwarnings("ignore")
     video_read('./train/57583_000082_Endzone.mp4')
 
