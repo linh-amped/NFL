@@ -6,6 +6,7 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.utils import ops as utils_ops
 import matplotlib.pyplot as plt
+import numpy as np
 
 ALL_MODELS = {
 'CenterNet HourGlass104 512x512' : 'https://tfhub.dev/tensorflow/centernet/hourglass_512x512/1',
@@ -64,7 +65,7 @@ def video_read(link_video):
     frame_reader = imageio.get_reader(link_video, 'ffmpeg', mode='I')
     idx, pre_idx = 0, 0
     for frame_num, frame in enumerate(frame_reader):
-        frame = Image.fromarray(frame.astype('uint8'))
+        frame = np.expand_dims(frame.astype('uint8'), axis = 0)
         result = human_detect(frame)
         label_id_offset = 0
         image_np_with_detections = frame
@@ -87,9 +88,8 @@ def video_read(link_video):
             agnostic_mode=False,
             keypoints=keypoints)
 
-        plt.figure(figsize=(24, 32))
+        plt.figure()
         plt.imshow(image_np_with_detections[0])
-        plt.show()
         print('detected')
         plt.savefig('{}_human.png'.format(link_video.replace('.mp4', '')))
         break
