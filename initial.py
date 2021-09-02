@@ -7,6 +7,7 @@ from object_detection.utils import visualization_utils as viz_utils
 from object_detection.utils import ops as utils_ops
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
 
 ALL_MODELS = {
 'CenterNet HourGlass104 512x512' : 'https://tfhub.dev/tensorflow/centernet/hourglass_512x512/1',
@@ -58,46 +59,53 @@ def human_detect(input_frame):
     result = {key: value.numpy() for key, value in results.items()}
     return result
 
-
+def extract_human(frame):
+    frame = np.expand_dims(frame.astype('uint8'), axis=0)
+    result = human_detect(frame)
+    bbox, bbox_class, bbox_score = None, None, None
+    if 'detection_keypoints' in result:
+        if result['detection_classes'][0] == 1.0: # if human
+            bbox = result['detection_keypoints'][0]
+            bbox_class = result['detection_classes'][0]
+            bbox_score = result['detection_keypoint_scores'][0]
+    print(bbox_class)
+    # keypoints, keypoint_scores = None, None
+    # if 'detection_keypoints' in result:
+    #     keypoints = result['detection_keypoints'][0]
+    #     keypoint_scores = result['detection_keypoint_scores'][0]
+    # if 'detection_classes' is 'person':
+    # For visualization
+    # viz_utils.visualize_boxes_and_labels_on_image_array(
+    #     image_np_with_detections[0],
+    #     result['detection_boxes'][0],
+    #     (result['detection_classes'][0] + label_id_offset).astype(int),
+    #     result['detection_scores'][0],
+    #     category_index,
+    #     use_normalized_coordinates=True,
+    #     max_boxes_to_draw=200,
+    #     min_score_thresh=.30,
+    #     agnostic_mode=False,
+    #     keypoints=keypoints)
+    #
+    # plt.figure()
+    # plt.imshow(image_np_with_detections[0])
+    # print('detected')
+    # plt.savefig('{}_human.png'.format(link_video.replace('.mp4', '')))
+    return None
 def video_read(link_video):
     PATH_TO_LABELS = './models/research/object_detection/data/mscoco_label_map.pbtxt'
     category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
     frame_reader = imageio.get_reader(link_video, 'ffmpeg', mode='I')
     idx, pre_idx = 0, 0
     for frame_num, frame in enumerate(frame_reader):
-        frame = np.expand_dims(frame.astype('uint8'), axis = 0)
-        result = human_detect(frame)
-        label_id_offset = 0
-        image_np_with_detections = frame
-
-        # Use keypoints if available in detections
-        keypoints, keypoint_scores = None, None
-        if 'detection_keypoints' in result:
-            keypoints = result['detection_keypoints'][0]
-            keypoint_scores = result['detection_keypoint_scores'][0]
-
-        viz_utils.visualize_boxes_and_labels_on_image_array(
-            image_np_with_detections[0],
-            result['detection_boxes'][0],
-            (result['detection_classes'][0] + label_id_offset).astype(int),
-            result['detection_scores'][0],
-            category_index,
-            use_normalized_coordinates=True,
-            max_boxes_to_draw=200,
-            min_score_thresh=.30,
-            agnostic_mode=False,
-            keypoints=keypoints)
-
-        plt.figure()
-        plt.imshow(image_np_with_detections[0])
-        print('detected')
-        plt.savefig('{}_human.png'.format(link_video.replace('.mp4', '')))
+        extract_human(frame)
         break
-
     return None
 
 
 def main():
+
+    warnings.filterwarnings("ignore")
     video_read('./train/57583_000082_Endzone.mp4')
 
 
